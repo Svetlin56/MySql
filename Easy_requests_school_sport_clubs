@@ -1,0 +1,84 @@
+insert into students
+values(null,"Ivan Ivanov Ivanov", "9207186371", "Sofia-Serdika", "0888892950", 10);
+
+
+select * from students
+order by name;
+
+
+delete from students
+where id = 7;
+
+
+select students.name, sports.name
+from students join sports
+on students.id in (
+	select student_id
+from student_sport
+where sportGroup_id in (
+		select id
+from sportgroups
+where sport_id = sports.id
+)
+);
+
+
+select students.name, students.class, sportgroups.id
+from students join sportgroups
+on students.id in (
+	select student_id
+from student_sport
+where sportgroups.id = sportGroup_id
+and sportgroups.dayOfWeek = 'Monday'
+);
+
+
+select coaches.name, sports.name
+from coaches join sports
+on coaches.id in (
+	select coach_id
+from sportgroups
+where sport_id = sports.id
+and sports.name = 'Football'
+);
+
+
+select sportgroups.location, sportgroups.hourOfTraining
+from sportgroups join sports
+on sports.name = 'Volleyball';
+
+
+select students.`name`, sports.`name`
+from students join sports
+on students.id in (
+	select student_id
+from student_sport
+where sportGroup_id in (
+		select id
+from sportgroups
+where sport_id = sports.id
+)
+and students.name = "Iliyan Ivanov"
+);
+
+
+select students.`name`, coaches.`name`
+from students join coaches
+on students.id in (
+	select student_id
+from student_sport
+where sportGroup_id in (
+		select id
+from sportgroups
+)
+)
+where coaches.id in (
+	select coach_id
+from sportgroups
+where coaches.name = 'Ivan Todorov Petkov'
+and sport_id in (
+		select id
+from sports
+where sports.name = 'Football'
+)
+);

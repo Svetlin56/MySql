@@ -1,0 +1,106 @@
+(SELECT c.name AS Coach, sg.location AS Place FROM coaches as c LEFT JOIN sportGroups AS sg on c.id=sg.coach_id)
+UNION
+(SELECT coaches.name, sportGroups.location FROM coaches RIGHT JOIN sportGroups on coaches.id=sportGroups.coach_id);
+
+
+
+SELECT firstStud.name as Student1, secondStud.name as Student2, sports.name as Sport 
+FROM students as firstStud JOIN students as secondStud
+ON firstStud.id
+JOIN sports ON
+(firstStud.id IN
+(SELECT student_id FROM student_sport WHERE sportGroup_id IN
+(SELECT id FROM sportGroups WHERE sportGroups.sport_id=sports.id)
+)
+)
+AND
+(secondStud.id IN
+(SELECT Student_id FROM student_sport WHERE sportGroup_id IN
+(SELECT id FROM sportGroups WHERE sportGroups.sport_id=sports.id)
+)
+)
+WHERE firstStud.id IN
+(SELECT student_id FROM student_sport WHERE sportGroup_id IN
+(SELECT sportGroup_id FROM student_sport WHERE student_id=secondStud.id)
+)
+ORDER BY Sport;
+
+ 
+ 
+
+// Number 1
+SELECT students.name, students.class, students.phone FROM sports JOIN sportGroups ON 
+sports.id=sportGroups.sport_id JOIN student_sport ON 
+sportGroups.id=student_sport.sportGroup_id JOIN students ON
+student_sport.student_id=students.id WHERE sports.name LIKE 'Football';
+ 
+ 
+// Number 2
+SELECT DISTINCT coaches.name, sports.name FROM sports JOIN sportGroups ON 
+sports.id=sportGroups.sport_id JOIN coaches ON 
+sportGroups.coach_id=coaches.id WHERE sports.name LIKE 'Volleyball';
+
+
+// Number 3
+SELECT coaches.name, sports.name FROM sports JOIN sportGroups ON 
+sports.id=sportGroups.sport_id JOIN student_sport ON 
+sportGroups.id=student_sport.sportGroup_id JOIN students ON
+student_sport.student_id=students.id JOIN coaches ON
+sportGroups.coach_id=coaches.id WHERE students.name LIKE 'Iliyan Ivanov';
+ 
+ 
+// Number 4
+SELECT students.name, students.class, sportGroups.location, coaches.name FROM students JOIN student_sport ON 
+students.id=student_sport.student_id JOIN sportGroups ON 
+student_sport.sportGroup_id=sportGroups.id JOIN coaches ON
+sportGroups.coach_id=coaches.id WHERE sportGroups.hourOfTraining LIKE '08:00:00';
+ 
+
+ 
+// Database flights
+DROP DATABASE IF EXISTS private_airport;
+CREATE DATABASE private_airport;
+USE private_airport;
+ 
+CREATE TABLE departments(
+id INT auto_increment PRIMARY KEY,
+name VARCHAR(255) NOT NULL
+);
+ 
+CREATE TABLE employees(
+id INT auto_increment PRIMARY KEY,
+department_id INT NOT NULL,
+name VARCHAR(255) NOT NULL,
+email VARCHAR(255) NOT NULL,
+FOREIGN KEY (department_id)
+REFERENCES departments(id)
+);
+ 
+CREATE TABLE planes(
+id INT auto_increment PRIMARY KEY,
+brand VARCHAR(100) NOT NULL,
+number VARCHAR(100) NOT NULL,
+prod_date DATE NOT NULL,
+manuf VARCHAR(100) NOT NULL,
+pass_capacity INT NOT NULL
+);
+ 
+CREATE TABLE flights(
+id  INT auto_increment PRIMARY KEY,
+plane_id INT NOT NULL,
+pilot_name VARCHAR(255) NOT NULL,
+pilot_id INT NOT NULL,
+#flight attendant name
+fa_name VARCHAR(255) NOT NULL,
+fa_id INT NOT NULL,
+departure_datetime DATETIME NOT NULL,
+arrival_datetime DATETIME NOT NULL,
+departure_location VARCHAR(255) NOT NULL,
+arrival_location VARCHAR(255) NOT NULL,
+FOREIGN KEY (plane_id)
+REFERENCES planes(id),
+FOREIGN KEY (pilot_id)
+REFERENCES employees(id),
+FOREIGN KEY (fa_id)
+REFERENCES employees(id)
+);

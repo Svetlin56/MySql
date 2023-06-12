@@ -1,0 +1,173 @@
+-- #1
+create view dailyDeals as
+select customers.name, customers.phone, properties.location, properties.area, properties.price,
+																				employees.name
+from customers join properties
+on customers.id = properties.customer_id
+join employees
+on employees.id in (
+	select employee_id
+    from deals
+    where ad_id in (
+		select id
+        from ads
+        where property_id = properties.id
+    )
+    and day(dealDate) = day(now())
+)
+where employees.position = "Брокер";
+
+-- #2
+delimiter |
+create procedure monlthlyBonusPayment(IN curr_month tinyint, IN curr_year int)
+begin
+	declare finished bit;
+    declare curr_broker_id int;
+    declare broker_deals int;
+    declare iterator int;
+    declare curr_deal_id int;
+    declare property_price double;
+	declare brokerCursor cursor for
+		select id
+        from employees
+        where position = "Брокер";
+        
+    declare continue handler for not found set finished = 1;    
+    
+    create temporary table tempDeals(
+		dealId int
+    );
+    
+	set @result = 0;
+    set finished = 0;
+    set iterator = 1;
+    
+    call monthSalaryPayment(curr_month, curr_year, @result);
+    
+    if (@result = 0)
+    then
+		signal sqlstate '45000' set message_text = "Проблем с изплащането на заплатите";
+	end if;
+	
+    broker_label: while (finished = 0)
+    do
+		fetch brokerCursor into curr_broker_id;
+        if (finished = 1)
+        then
+			leave broker_label;
+        end if;
+        
+        if ((select count(id) from salaryPayments where monthOfPayment = curr_month
+										  and yearOfPayment = curr_year
+                                          and employee_id = curr_broker_id) > 0)
+		then
+			select count(id) into broker_deals
+            from deals 
+            where employee_id = curr_broker_id;
+            
+			if (broker_deals > 4)
+            then
+				insert into tempDeals
+					select id
+                    from deals
+                    where employee_id = curr_broker_id;
+            
+				while (iterator >= 1 and iterator <= broker_deals)
+                do
+					select dealId into curr_deal_id
+                    from tempDeals
+                    limit 1;
+                    
+                    select properties.price into prorperty_price
+                    from properties join ads
+                    on properties.id = ads.propery_id
+                    join deals
+                    on ads.id = deals.ad_id
+                    where deals.id = curr_deal_id;
+                    
+                    start transaction;
+						if (property_price >= 50000 and property_price < 100000)
+						then
+							update salaryPayments
+							set monthlyBonus = monthlyBonus + 500
+							where monthOfPayment = curr_month
+							and employee_id = curr_broker_id;
+                            
+                            if (row_count() = 0)
+                            then
+								select "Error";
+                                rollback;
+                            else
+								commit;
+                            end if;
+						else if (property_price >= 100000 and property_price < 500000)
+                        then
+							update salaryPayments
+							set monthlyBonus = monthlyBonus + 1000
+							where monthOfPayment = curr_month
+							and employee_id = curr_broker_id;
+                            
+							if (row_count() = 0)
+                            then
+								select "Error";
+                                rollback;
+                            else
+								commit;
+                            end if;
+						else
+							update salaryPayments
+							set monthlyBonus = monthlyBonus + 2500
+							where monthOfPayment = curr_month
+							and employee_id = curr_broker_id;
+                            
+							if (row_count() = 0)
+                            then
+								select "Error";
+                                rollback;
+                            else
+								commit;
+                            end if;
+						end if;
+                        end if;
+                        
+					delete from tempDeals
+                    where dealId = curr_deal_id;
+                end while;
+            end if;
+        end if;
+	end while;
+    drop temporary table tempDeals;
+end;
+|
+delimiter ;
+
+-- #3
+delimiter |
+create trigger adsTrigger before insert on ads
+for each row
+begin
+	declare cust_id int;
+    declare cnt int;
+    
+    select customers.id into cust_id
+    from customers join properties
+    on customers.id = properties.customer_id
+    where new.property_id = properties.id;
+    
+	select count(deals.id) into cnt
+    from deals join ads
+    on deals.ad_id = ads.id
+    where ads.property_id in (
+		select id
+        from properties
+        where customer_id = cust_id
+    );
+    
+    if (cnt > 0)
+    then
+		call SendEMailToCustomer(cust_id, new.property_id);
+    end if;
+    
+end;
+|
+delimiter ;

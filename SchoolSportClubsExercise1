@@ -1,14 +1,11 @@
 insert into students
 values(null,"Ivan Ivanov Ivanov", "9207186371", "Sofia-Serdika", "0888892950", 10);
 
-
 select * from students
 order by name;
 
-
 delete from students
 where id = 7;
-
 
 select students.name, sports.name
 from students join sports
@@ -21,7 +18,6 @@ from sportgroups
 where sport_id = sports.id
 )
 );
-
 
 select students.name, students.class, sportgroups.id
 from students join sportgroups
@@ -42,11 +38,9 @@ where sport_id = sports.id
 and sports.name = 'Football'
 );
 
-
 select sportgroups.location, sportgroups.hourOfTraining
 from sportgroups join sports
 on sports.name = 'Volleyball';
-
 
 select students.`name`, sports.`name`
 from students join sports
@@ -61,7 +55,6 @@ where sport_id = sports.id
 and students.name = "Iliyan Ivanov"
 );
 
-
 select students.`name`, coaches.`name`
 from students join coaches
 on students.id in (
@@ -72,6 +65,7 @@ where sportGroup_id in (
 from sportgroups
 )
 )
+
 where coaches.id in (
 	select coach_id
 from sportgroups

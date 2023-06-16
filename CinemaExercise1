@@ -1,0 +1,15 @@
+SELECT c.name AS cinema_name, h.name AS hall_name, p.broadcasting_time
+FROM cinemas AS c
+INNER JOIN halls AS h ON c.id = h.cinema_id
+INNER JOIN projections AS p ON h.id = p.hall_id
+INNER JOIN films AS f ON p.film_id = f.id
+WHERE (h.hall_status = 'VIP' OR h.hall_status = 'Deluxe') AND f.name = 'Final Destinaton 7'
+ORDER BY c.name, h.name;
+
+
+SELECT SUM(p.audience) AS total_audience
+FROM cinemas AS c
+INNER JOIN halls AS h ON c.id = h.cinema_id
+INNER JOIN projections AS p ON h.id = p.hall_id
+INNER JOIN films AS f ON p.film_id = f.id
+WHERE h.hall_status = 'VIP' AND f.name = 'Final Destinaton 7' AND c.name = 'Arena Mladost';

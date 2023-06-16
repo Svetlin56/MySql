@@ -1,0 +1,31 @@
+#zadacha 4
+
+SELECT DISTINCT CONCAT(s1.name, ' and ', s2.name) AS pairs, sg.location, sg.dayOfWeek, sg.hourOfTraining
+FROM student_sport ss1
+JOIN student_sport ss2 ON ss1.sportGroup_id = ss2.sportGroup_id AND ss1.student_id < ss2.student_id
+JOIN students s1 ON s1.id = ss1.student_id
+JOIN students s2 ON s2.id = ss2.student_id
+JOIN sportGroups sg ON sg.id = ss1.sportGroup_id
+ORDER BY sg.location, sg.dayOfWeek, sg.hourOfTraining
+
+
+#zadacha 5
+
+CREATE VIEW sp (Student_name, Class, Location, Coach_name)
+AS
+SELECT students.name, students.class, sportGroups.location, coaches.name FROM students JOIN student_sport ON
+students.id=student_sport.student_id JOIN sportGroups ON
+student_sport.sportGroup_id=sportGroups.id JOIN coaches ON
+sportGroups.coach_id=coaches.id
+WHERE sportGroups.hourOfTraining LIKE '08:00:00';
+
+SELECT * FROM sp;
+
+
+#zadacha 6
+
+SELECT s.name AS sport, COUNT(DISTINCT student_sport.student_id) AS number_of_students
+FROM sports AS s
+LEFT JOIN sportGroups ON s.id = sportGroups.sport_id
+LEFT JOIN student_sport ON sportGroups.id = student_sport.sportGroup_id
+GROUP BY s.name;

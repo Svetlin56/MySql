@@ -1,0 +1,22 @@
+SELECT COUNT(students.id)
+FROM students JOIN student_sport ON students.id = student_sport.student_id
+JOIN sportgroups ON student_sport.sportGroup_id = sportgroups.id
+JOIN sports ON sportgroups.sport_id = sports.id
+WHERE sports.name = 'Football';
+
+
+
+SELECT coaches.name, sports.name AS sportName
+FROM coaches LEFT JOIN sportgroups ON
+coaches.id = sportgroups.coach_id
+LEFT JOIN sports ON sportgroups.sport_id = sports.id;
+
+
+
+
+SELECT sports.name, sportgroups.location, COUNT(students.id) AS numOfStudents
+FROM sports JOIN sportgroups ON sports.id = sportgroups.sport_id
+JOIN student_sport ON sportgroups.id = student_sport.sportGroup_id
+JOIN students ON students.id = student_sport.student_id
+GROUP BY sports.name, sportgroups.location
+HAVING numOfStudents > 3;

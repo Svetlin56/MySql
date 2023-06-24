@@ -1,0 +1,8 @@
+SELECT students.id, students.name, SUM(taxespayments.paymentAmount) AS sumTaxes,
+taxespayments.month AS month
+FROM students JOIN taxespayments ON students.id = taxespayments.student_id
+JOIN sportgroups ON taxespayments.group_id = sportgroups.id
+JOIN coaches ON sportgroups.coach_id = coaches.id
+WHERE coaches.egn = '7509041245'
+GROUP BY student_id, month
+HAVING sumTaxes > 250;

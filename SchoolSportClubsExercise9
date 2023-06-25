@@ -1,0 +1,37 @@
+DELIMITER //
+DROP PROCEDURE IF EXISTS transfer_money;
+CREATE PROCEDURE transfer_money(IN from_acc_id INT, IN to_acc_id INT, IN Amount DECIMAL(10,2))
+BEGIN
+DECLARE from_acc_balance DECIMAL(10, 2);
+DECLARE to_acc_balance DECIMAL(10, 2);
+
+START TRANSACTION;
+
+SELECT amount INTO from_acc_balance FROM customer_accounts WHERE id = from_acc_id FOR UPDATE;
+SELECT amount INTO to_acc_balance FROM customer_accounts WHERE id = to_acc_id FOR UPDATE;
+
+IF from_acc_balance < Amount THEN
+SET @error_message = 'Недостатъчно пари на сметката за трансфер.';
+ELSE
+UPDATE customer_accounts SET amount = amount - Amount WHERE id = from_acc_id;
+IF ROW_COUNT() = 0 THEN
+SET @error_message = 'Неуспешна транзакция.';
+ROLLBACK;
+SELECT @error_message;
+ELSE
+UPDATE customer_accounts SET amount = amount + Amount WHERE id = to_acc_id;
+IF ROW_COUNT() = 0 THEN
+SET @error_message = 'Неуспешна транзакция.';
+ROLLBACK;
+SELECT @error_message;
+ELSE
+COMMIT;
+SELECT 'Транзакцията беше успешна.';
+END IF;
+END IF;
+END IF;
+END //
+
+DELIMITER ;
+
+CALL transfer_money(1, 2, 5000);
